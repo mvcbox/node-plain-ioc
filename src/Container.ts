@@ -1,12 +1,13 @@
 import { Dependency} from './Dependency';
+import { DependencyKey} from './DependencyKey';
 import { DependencyFacroty} from './DependencyFacroty';
 import { FactoryNotBoundError, FactoryAlreadyBoundError } from './errors';
 
 export class Container {
-    public dependencies = new Map<string | symbol, Dependency<any>>();
-    public initInstances = new Map<string | symbol, any>();
+    public dependencies = new Map<DependencyKey, Dependency<any>>();
+    public initInstances = new Map<DependencyKey, any>();
 
-    public bind<T>(key: string | symbol, factory: DependencyFacroty<T>): void {
+    public bind<T>(key: DependencyKey, factory: DependencyFacroty<T>): void {
         if (this.dependencies.has(key)) {
             throw new FactoryAlreadyBoundError(`Factory for '${String(key)}' already bound`);
         }
@@ -16,7 +17,7 @@ export class Container {
         });
     }
 
-    public unbind(key: string | symbol): void {
+    public unbind(key: DependencyKey): void {
         if (!this.dependencies.has(key)) {
             throw new FactoryNotBoundError(`Factory not bound with '${String(key)}'`);
         }
@@ -25,7 +26,7 @@ export class Container {
         this.initInstances.delete(key);
     }
 
-    public bindSingleton<T>(key: string | symbol, factory: DependencyFacroty<T>): void {
+    public bindSingleton<T>(key: DependencyKey, factory: DependencyFacroty<T>): void {
         if (this.dependencies.has(key)) {
             throw new FactoryAlreadyBoundError(`Factory for '${String(key)}' already bound`);
         }
@@ -36,17 +37,16 @@ export class Container {
         });
     }
 
-    public isBound(key: string | symbol): boolean {
+    public isBound(key: DependencyKey): boolean {
         return this.dependencies.has(key);
     }
 
-    public resolve<T>(key: string | symbol): T {
+    public resolve<T>(key: DependencyKey): T {
         if (!this.dependencies.has(key)) {
             throw new FactoryNotBoundError(`Factory not bound with '${String(key)}'`);
         }
 
         const dependency = <Dependency<T>>this.dependencies.get(key);
-
 
         if (dependency.singleton && this.initInstances.has(key)) {
             return <T>this.initInstances.get(key);
