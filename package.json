@@ -1,0 +1,31 @@
+{
+  "name": "plain-ioc",
+  "version": "0.1.0",
+  "description": "Plain inversion of control container",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "node ./node_modules/typescript/bin/tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mvcbox/node-plain-ioc.git"
+  },
+  "keywords": [
+    "inversion",
+    "of",
+    "control",
+    "container"
+  ],
+  "author": "mvcbox.org@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mvcbox/node-plain-ioc/issues"
+  },
+  "homepage": "https://github.com/mvcbox/node-plain-ioc#readme",
+  "devDependencies": {
+    "@types/node": "^12.7.2",
+    "typescript": "^3.5.3"
+  }
+}
