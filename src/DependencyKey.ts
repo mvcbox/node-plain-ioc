@@ -1,1 +1,1 @@
-export type DependencyKey = string | symbol;
+export type DependencyKey = string | symbol | object;
