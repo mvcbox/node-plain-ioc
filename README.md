@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/plain-ioc.svg?flush_cache=v1_0_0)](https://badge.fury.io/js/plain-ioc)
+
 # plain-ioc
 
 A small, dependency-free **Inversion of Control (IoC) / Dependency Injection** container for Node.js and TypeScript.
