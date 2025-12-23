@@ -30,12 +30,13 @@ export class Container {
     this.circularDependencyStack.push(key);
 
     if (detected) {
-      let dependencyStack = '\n>>>>>>> Circular Dependency Stack <<<<<<<\n';
-      dependencyStack += this.circularDependencyStack.map((item, index) => {
-        return `>>> [Dependency][${index}] ${this.keyToString(item)}\n`;
+      let errorMessage = 'Circular dependency detected\n\n';
+      errorMessage += '>>>>>>> Circular Dependency Stack <<<<<<<\n';
+      errorMessage += this.circularDependencyStack.map((item, index) => {
+        return `>>> [${index}]: ${this.keyToString(item)}\n`;
       }).join('');
 
-      throw new CircularDependencyError(dependencyStack);
+      throw new CircularDependencyError(errorMessage);
     }
   }
 
@@ -50,22 +51,22 @@ export class Container {
 
     try {
       if (typeof key === 'function') {
-        return `'${key.name || '<anonymous>'}' (${type})`;
+        return `"${key.name || '<anonymous>'}" (${type})`;
       }
 
       if (type === 'object') {
-        return `'${Object.prototype.toString.call(key)}' (${type})`;
+        return `"${Object.prototype.toString.call(key)}" (${type})`;
       }
 
-      return `'${String(key)}' (${type})`;
+      return `"${String(key)}" (${type})`;
     } catch {
-      return `'<unprintable>' (${type})`;
+      return `"<unprintable>" (${type})`;
     }
   }
 
   public bind<T>(key: DependencyKey, factory: DependencyFactory<T>): void {
     if (this.dependencies.has(key)) {
-      throw new FactoryAlreadyBoundError(`Factory for "${this.keyToString(key)}" already bound`);
+      throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
     }
 
     this.dependencies.set(key, {
@@ -75,7 +76,7 @@ export class Container {
 
   public unbind(key: DependencyKey): void {
     if (!this.dependencies.has(key)) {
-      throw new FactoryNotBoundError(`Factory not bound with "${this.keyToString(key)}"`);
+      throw new FactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
     }
 
     this.dependencies.delete(key);
@@ -84,7 +85,7 @@ export class Container {
 
   public bindSingleton<T>(key: DependencyKey, factory: DependencyFactory<T>): void {
     if (this.dependencies.has(key)) {
-      throw new FactoryAlreadyBoundError(`Factory for "${this.keyToString(key)}" already bound`);
+      throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
     }
 
     this.dependencies.set(key, {
@@ -99,7 +100,7 @@ export class Container {
 
   public resolve<T>(key: DependencyKey): T {
     if (!this.dependencies.has(key)) {
-      throw new FactoryNotBoundError(`Factory not bound with "${this.keyToString(key)}"`);
+      throw new FactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
     }
 
     const dependency = <Dependency<T>>this.dependencies.get(key);
