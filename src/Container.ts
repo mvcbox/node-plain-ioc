@@ -105,14 +105,14 @@ export class Container {
 
     const dependency = <Dependency<T>>this.dependencies.get(key);
 
+    if (dependency.singleton && this.initializedInstances.has(key)) {
+      return <T>this.initializedInstances.get(key);
+    }
+
     try {
       this.circularDependencyStackPush(key);
 
       if (dependency.singleton) {
-        if (this.initializedInstances.has(key)) {
-          return <T>this.initializedInstances.get(key);
-        }
-
         const instance = dependency.factory(this);
         this.initializedInstances.set(key, instance);
         return instance;
