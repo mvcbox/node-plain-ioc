@@ -1,1 +1,3 @@
-export class FactoryNotBoundError extends Error {}
+import { PlainIocError } from './PlainIocError';
+
+export class FactoryNotBoundError extends PlainIocError {}

@@ -1,5 +1,6 @@
-export * from './errors';
+export  * from './errors';
 export { Container } from './Container';
-export { Dependency } from './Dependency';
-export { DependencyKey } from './DependencyKey';
-export { DependencyFacroty } from './DependencyFacroty';
+export type { Dependency } from './Dependency';
+export type { DependencyKey } from './DependencyKey';
+export type { DependencyFactory } from './DependencyFactory';
+export type { ContainerOptions } from './ContainerOptions';

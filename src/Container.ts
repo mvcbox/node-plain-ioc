@@ -1,71 +1,126 @@
-import { Dependency} from './Dependency';
-import { DependencyKey} from './DependencyKey';
-import { DependencyFacroty} from './DependencyFacroty';
-import { FactoryNotBoundError, FactoryAlreadyBoundError } from './errors';
+import type { Dependency } from './Dependency';
+import type { DependencyKey } from './DependencyKey';
+import type { ContainerOptions } from './ContainerOptions';
+import type { DependencyFactory } from './DependencyFactory';
+import {
+  FactoryNotBoundError,
+  CircularDependencyError,
+  FactoryAlreadyBoundError
+} from './errors';
 
 export class Container {
-    public dependencies = new Map<DependencyKey, Dependency<any>>();
-    public initInstances = new Map<DependencyKey, any>();
+  protected readonly circularDependencyDetect: boolean;
+  protected readonly circularDependencyStack: DependencyKey[];
+  protected readonly initializedInstances: Map<DependencyKey, unknown>;
+  protected readonly dependencies: Map<DependencyKey, Dependency<unknown>>;
 
-    public bind<T>(key: DependencyKey, factory: DependencyFacroty<T>): void {
-        if (this.dependencies.has(key)) {
-            throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
-        }
+  public constructor(options?: ContainerOptions) {
+    this.circularDependencyStack = [];
+    this.initializedInstances = new Map<DependencyKey, unknown>();
+    this.dependencies = new Map<DependencyKey, Dependency<unknown>>();
+    this.circularDependencyDetect = options?.circularDependencyDetect ?? false;
+  }
 
-        this.dependencies.set(key, {
-            factory
-        });
+  protected circularDependencyStackPush(key: DependencyKey): void {
+    if (!this.circularDependencyDetect) {
+      return;
     }
 
-    public unbind(key: DependencyKey): void {
-        if (!this.dependencies.has(key)) {
-            throw new FactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
-        }
+    const detected = this.circularDependencyStack.findIndex(item => item === key) !== -1;
+    this.circularDependencyStack.push(key);
 
-        this.dependencies.delete(key);
-        this.initInstances.delete(key);
+    if (detected) {
+      let errorMessage = 'Circular dependency detected\n\n';
+      errorMessage += '>>>>>>> Circular Dependency Stack <<<<<<<\n';
+      errorMessage += this.circularDependencyStack.map((item, index) => {
+        return `>>> [${index}]: ${this.keyToString(item)}\n`;
+      }).join('');
+
+      throw new CircularDependencyError(errorMessage);
+    }
+  }
+
+  protected circularDependencyStackPop(): void {
+    if (this.circularDependencyDetect) {
+      this.circularDependencyStack.pop();
+    }
+  }
+
+  protected keyToString(key: DependencyKey): string {
+    const type = typeof key;
+
+    try {
+      if (typeof key === 'function') {
+        return `"${key.name || '<anonymous>'}" (${type})`;
+      }
+
+      if (type === 'object') {
+        return `"${Object.prototype.toString.call(key)}" (${type})`;
+      }
+
+      return `"${String(key)}" (${type})`;
+    } catch {
+      return `"<unprintable>" (${type})`;
+    }
+  }
+
+  public bind<T>(key: DependencyKey, factory: DependencyFactory<T>): void {
+    if (this.dependencies.has(key)) {
+      throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
     }
 
-    public bindSingleton<T>(key: DependencyKey, factory: DependencyFacroty<T>): void {
-        if (this.dependencies.has(key)) {
-            throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
-        }
+    this.dependencies.set(key, {
+      factory
+    });
+  }
 
-        this.dependencies.set(key, {
-            factory,
-            singleton: true
-        });
+  public unbind(key: DependencyKey): void {
+    if (!this.dependencies.has(key)) {
+      throw new FactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
     }
 
-    public isBound(key: DependencyKey): boolean {
-        return this.dependencies.has(key);
+    this.dependencies.delete(key);
+    this.initializedInstances.delete(key);
+  }
+
+  public bindSingleton<T>(key: DependencyKey, factory: DependencyFactory<T>): void {
+    if (this.dependencies.has(key)) {
+      throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
     }
 
-    public resolve<T>(key: DependencyKey): T {
-        if (!this.dependencies.has(key)) {
-            throw new FactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
-        }
+    this.dependencies.set(key, {
+      factory,
+      singleton: true
+    });
+  }
 
-        const dependency = <Dependency<T>>this.dependencies.get(key);
+  public isBound(key: DependencyKey): boolean {
+    return this.dependencies.has(key);
+  }
 
-        if (dependency.singleton && this.initInstances.has(key)) {
-            return <T>this.initInstances.get(key);
-        } else if (dependency.singleton) {
-            const instance = dependency.factory(this);
-            this.initInstances.set(key, instance);
-            return instance;
-        }
-
-        return dependency.factory(this);
+  public resolve<T>(key: DependencyKey): T {
+    if (!this.dependencies.has(key)) {
+      throw new FactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
     }
 
-    public keyToString(key: DependencyKey): string {
-        const type = typeof key;
+    const dependency = <Dependency<T>>this.dependencies.get(key);
 
-        if (typeof key === 'function') {
-            key = key.name || '';
-        }
-
-        return String(`'${String(key)}' (${type})`);
+    if (dependency.singleton && this.initializedInstances.has(key)) {
+      return <T>this.initializedInstances.get(key);
     }
+
+    try {
+      this.circularDependencyStackPush(key);
+
+      if (dependency.singleton) {
+        const instance = dependency.factory(this);
+        this.initializedInstances.set(key, instance);
+        return instance;
+      }
+
+      return dependency.factory(this);
+    } finally {
+      this.circularDependencyStackPop();
+    }
+  }
 }
