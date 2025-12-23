@@ -1,6 +1,6 @@
-import { DependencyFacroty } from './DependencyFacroty';
+import { DependencyFactory } from './DependencyFactory';
 
 export interface Dependency<T> {
-    factory: DependencyFacroty<T>;
+    factory: DependencyFactory<T>;
     singleton?: boolean;
 }

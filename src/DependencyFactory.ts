@@ -1,5 +1,5 @@
 import { Container } from './Container';
 
-export interface DependencyFacroty<T> {
+export interface DependencyFactory<T> {
     (container: Container): T;
 }

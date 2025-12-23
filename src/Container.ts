@@ -1,13 +1,13 @@
 import { Dependency} from './Dependency';
 import { DependencyKey} from './DependencyKey';
-import { DependencyFacroty} from './DependencyFacroty';
+import { DependencyFactory} from './DependencyFactory';
 import { FactoryNotBoundError, FactoryAlreadyBoundError } from './errors';
 
 export class Container {
     public dependencies = new Map<DependencyKey, Dependency<any>>();
     public initInstances = new Map<DependencyKey, any>();
 
-    public bind<T>(key: DependencyKey, factory: DependencyFacroty<T>): void {
+    public bind<T>(key: DependencyKey, factory: DependencyFactory<T>): void {
         if (this.dependencies.has(key)) {
             throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
         }
@@ -26,7 +26,7 @@ export class Container {
         this.initInstances.delete(key);
     }
 
-    public bindSingleton<T>(key: DependencyKey, factory: DependencyFacroty<T>): void {
+    public bindSingleton<T>(key: DependencyKey, factory: DependencyFactory<T>): void {
         if (this.dependencies.has(key)) {
             throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
         }

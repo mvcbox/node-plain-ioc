@@ -13,6 +13,7 @@
     "sourceMap": false,
     "inlineSources": false,
     "allowJs": false,
-    "typeRoots": ["node_modules/@types"]
+    "strictPropertyInitialization": true,
+    "typeRoots": ["types", "node_modules/@types"]
   }
 }
