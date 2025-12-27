@@ -1,4 +1,4 @@
-[![npm version](https://badge.fury.io/js/plain-ioc.svg?flush_cache=v1_0_0)](https://badge.fury.io/js/plain-ioc)
+[![npm version](https://badge.fury.io/js/plain-ioc.svg)](https://badge.fury.io/js/plain-ioc)
 
 # plain-ioc
 
