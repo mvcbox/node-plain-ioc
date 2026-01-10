@@ -186,7 +186,7 @@ import { Container } from "plain-ioc";
 const c = new Container({ circularDependencyDetect: true });
 ```
 
-When enabled, `resolve()` tracks a stack of keys being resolved. If the same key appears twice in the stack, a `CircularDependencyError` is thrown with a message that includes the dependency stack.
+When enabled, `resolve()` tracks a stack of keys being resolved. If the same key appears twice in the stack, a `PlainIocCircularDependencyError` is thrown with a message that includes the dependency stack.
 
 > Recommendation: Keep this enabled in development/test, and turn it off in production for minimal overhead.
 
@@ -204,26 +204,26 @@ Creates a container.
 
 Registers a **transient** factory.
 
-- Throws `FactoryAlreadyBoundError` if the key is already registered.
+- Throws `PlainIocFactoryAlreadyBoundError` if the key is already registered.
 
 ### `container.bindSingleton<T>(key, factory)`
 
 Registers a **singleton** factory.
 
-- Throws `FactoryAlreadyBoundError` if the key is already registered.
+- Throws `PlainIocFactoryAlreadyBoundError` if the key is already registered.
 
 ### `container.resolve<T>(key): T`
 
 Resolves an instance.
 
-- Throws `FactoryNotBoundError` if the key is not registered.
-- Throws `CircularDependencyError` when circular dependency detection is enabled and a cycle is detected.
+- Throws `PlainIocFactoryNotBoundError` if the key is not registered.
+- Throws `PlainIocCircularDependencyError` when circular dependency detection is enabled and a cycle is detected.
 
 ### `container.unbind(key)`
 
 Removes a registered factory and clears any cached singleton instance.
 
-- Throws `FactoryNotBoundError` if the key is not registered.
+- Throws `PlainIocFactoryNotBoundError` if the key is not registered.
 
 ### `container.isBound(key): boolean`
 
@@ -236,21 +236,21 @@ Returns `true` if a factory is registered for `key`.
 All library errors extend the base class `PlainIocError`:
 
 - `PlainIocError`
-- `FactoryNotBoundError`
-- `FactoryAlreadyBoundError`
-- `CircularDependencyError`
+- `PlainIocFactoryNotBoundError`
+- `PlainIocFactoryAlreadyBoundError`
+- `PlainIocCircularDependencyError`
 
 You can catch these specifically:
 
 ```ts
-import { Container, FactoryNotBoundError } from "plain-ioc";
+import { Container, PlainIocFactoryNotBoundError } from "plain-ioc";
 
 const c = new Container();
 
 try {
   c.resolve("missing");
 } catch (e) {
-  if (e instanceof FactoryNotBoundError) {
+  if (e instanceof PlainIocFactoryNotBoundError) {
     console.error("Not registered");
   }
 }

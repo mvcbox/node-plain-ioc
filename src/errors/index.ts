@@ -1,4 +1,4 @@
 export { PlainIocError } from './PlainIocError';
-export { FactoryNotBoundError } from './FactoryNotBoundError';
-export { CircularDependencyError } from './CircularDependencyError';
-export { FactoryAlreadyBoundError } from './FactoryAlreadyBoundError';
+export { PlainIocFactoryNotBoundError } from './PlainIocFactoryNotBoundError';
+export { PlainIocCircularDependencyError } from './PlainIocCircularDependencyError';
+export { PlainIocFactoryAlreadyBoundError } from './PlainIocFactoryAlreadyBoundError';

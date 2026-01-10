@@ -3,9 +3,9 @@ import type { DependencyKey } from './DependencyKey';
 import type { ContainerOptions } from './ContainerOptions';
 import type { DependencyFactory } from './DependencyFactory';
 import {
-  FactoryNotBoundError,
-  CircularDependencyError,
-  FactoryAlreadyBoundError
+  PlainIocFactoryNotBoundError,
+  PlainIocCircularDependencyError,
+  PlainIocFactoryAlreadyBoundError
 } from './errors';
 
 export class Container {
@@ -36,7 +36,7 @@ export class Container {
         return `>>> [${index}]: ${this.keyToString(item)}\n`;
       }).join('');
 
-      throw new CircularDependencyError(errorMessage);
+      throw new PlainIocCircularDependencyError(errorMessage);
     }
   }
 
@@ -47,51 +47,56 @@ export class Container {
   }
 
   protected keyToString(key: DependencyKey): string {
-    const type = typeof key;
+    const keyType = typeof key;
 
     try {
       if (typeof key === 'function') {
-        return `"${key.name || '<anonymous>'}" (${type})`;
+        return `[${keyType}] "${key.name || '<anonymous>'}"`;
+      } else if (typeof key === 'symbol') {
+        return `[${keyType}] "${Symbol.prototype.toString.call(key)}"`;
+      } else if (typeof key === 'object') {
+        return `[${keyType}] "${Object.prototype.toString.call(key)}"`;
       }
 
-      if (type === 'object') {
-        return `"${Object.prototype.toString.call(key)}" (${type})`;
-      }
-
-      return `"${String(key)}" (${type})`;
+      return `[${keyType}] "${String(key)}"`;
     } catch {
-      return `"<unprintable>" (${type})`;
+      return `[${keyType}] "<unprintable>"`;
     }
   }
 
-  public bind<T>(key: DependencyKey, factory: DependencyFactory<T>): void {
+  public bind<T>(key: DependencyKey, factory: DependencyFactory<T>): this {
     if (this.dependencies.has(key)) {
-      throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
+      throw new PlainIocFactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
     }
 
     this.dependencies.set(key, {
       factory
     });
+
+    return this;
   }
 
-  public unbind(key: DependencyKey): void {
-    if (!this.dependencies.has(key)) {
-      throw new FactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
-    }
-
-    this.dependencies.delete(key);
-    this.initializedInstances.delete(key);
-  }
-
-  public bindSingleton<T>(key: DependencyKey, factory: DependencyFactory<T>): void {
+  public bindSingleton<T>(key: DependencyKey, factory: DependencyFactory<T>): this {
     if (this.dependencies.has(key)) {
-      throw new FactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
+      throw new PlainIocFactoryAlreadyBoundError(`Factory for ${this.keyToString(key)} already bound`);
     }
 
     this.dependencies.set(key, {
       factory,
       singleton: true
     });
+
+    return this;
+  }
+
+  public unbind(key: DependencyKey): this {
+    if (!this.dependencies.has(key)) {
+      throw new PlainIocFactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
+    }
+
+    this.dependencies.delete(key);
+    this.initializedInstances.delete(key);
+    return this;
   }
 
   public isBound(key: DependencyKey): boolean {
@@ -99,26 +104,26 @@ export class Container {
   }
 
   public resolve<T>(key: DependencyKey): T {
-    if (!this.dependencies.has(key)) {
-      throw new FactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
+    const dependency = this.dependencies.get(key);
+
+    if (!dependency) {
+      throw new PlainIocFactoryNotBoundError(`Factory not bound with ${this.keyToString(key)}`);
     }
 
-    const dependency = <Dependency<T>>this.dependencies.get(key);
-
     if (dependency.singleton && this.initializedInstances.has(key)) {
-      return <T>this.initializedInstances.get(key);
+      return this.initializedInstances.get(key) as T;
     }
 
     try {
       this.circularDependencyStackPush(key);
+      const { factory } = dependency;
+      const instance = factory(this) as T;
 
       if (dependency.singleton) {
-        const instance = dependency.factory(this);
         this.initializedInstances.set(key, instance);
-        return instance;
       }
 
-      return dependency.factory(this);
+      return instance;
     } finally {
       this.circularDependencyStackPop();
     }
