@@ -1,6 +1,6 @@
 {
   "name": "plain-ioc",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Plain inversion of control container",
   "type": "commonjs",
   "main": "./dist/index.js",
