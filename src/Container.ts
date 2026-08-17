@@ -119,7 +119,7 @@ export class Container {
       const { factory } = dependency;
       const instance = factory(this) as T;
 
-      if (dependency.singleton) {
+      if (dependency.singleton && this.dependencies.get(key) === dependency) {
         this.initializedInstances.set(key, instance);
       }
 
