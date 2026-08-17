@@ -16,7 +16,10 @@
   "scripts": {
     "build": "npm run clean && node ./node_modules/.bin/tsc",
     "clean": "node -e \"['./dist'].forEach(item => require('fs').rmSync(item, {recursive:true,force:true}));\"",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "test": "npm run build && npm run test:types && npm run test:runtime",
+    "test:runtime": "mocha --no-parallel \"test/runtime/**/*.test.js\"",
+    "test:types": "tsc --project tsconfig.test.json --pretty false"
   },
   "engines": {
     "node": ">=6.0.0"
@@ -56,6 +59,8 @@
   ],
   "devDependencies": {
     "@types/node": "^6.14.13",
+    "chai": "4.5.0",
+    "mocha": "10.8.2",
     "typescript": "^5.9.3"
   }
 }

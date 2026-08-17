@@ -258,6 +258,23 @@ try {
 
 ---
 
+## Testing
+
+From a repository checkout with development dependencies installed:
+
+```bash
+npm test
+```
+
+`npm test` builds the library once, then checks the public TypeScript type contract and runs the serial Mocha/Chai
+runtime suite. Packaging remains build-only, so run the tests explicitly. The suite uses the development runtime and is
+not a Node.js 6 compatibility matrix.
+
+`npm run test:types` and `npm run test:runtime` run only their respective checks and do not build the library. Before
+running `npm run test:runtime` directly, run `npm run build` so `dist` is current.
+
+---
+
 ## Notes & limitations
 
 - Factories are **synchronous** (the type system rejects `Promise`-returning factories). If you need async initialization, create the instance elsewhere and bind it as a singleton value via a factory like `() => alreadyInitialized`.
