@@ -60,7 +60,7 @@ Factories receive the `Container`, so they can resolve other dependencies.
 ### Create a container
 
 ```ts
-import { Container } from "plain-ioc";
+import { Container } from 'plain-ioc';
 
 const container = new Container();
 ```
@@ -70,14 +70,14 @@ const container = new Container();
 `bind()` registers a factory that runs **every time** you resolve the key.
 
 ```ts
-import { Container } from "plain-ioc";
+import { Container } from 'plain-ioc';
 
 const c = new Container();
 
-c.bind("now", () => Date.now());
+c.bind('now', () => Date.now());
 
-const a = c.resolve<number>("now");
-const b = c.resolve<number>("now");
+const a = c.resolve<number>('now');
+const b = c.resolve<number>('now');
 // a !== b (very likely)
 ```
 
@@ -86,10 +86,10 @@ const b = c.resolve<number>("now");
 `bindSingleton()` registers a factory that runs **once**. The created instance is cached and returned for subsequent resolves.
 
 ```ts
-import { Container } from "plain-ioc";
+import { Container } from 'plain-ioc';
 
 class Logger {
-  log(message: string) {
+  public log(message: string): void {
     console.log(message);
   }
 }
@@ -106,19 +106,19 @@ const l2 = c.resolve<Logger>(Logger);
 ### Using symbols (recommended for interfaces)
 
 ```ts
-import { Container } from "plain-ioc";
+import { Container } from 'plain-ioc';
 
 interface Config {
   baseUrl: string;
 }
 
 const TOKENS = {
-  Config: Symbol("Config"),
+  Config: Symbol('Config')
 } as const;
 
 const c = new Container();
 
-c.bindSingleton<Config>(TOKENS.Config, () => ({ baseUrl: "https://api.example.com" }));
+c.bindSingleton<Config>(TOKENS.Config, () => ({ baseUrl: 'https://api.example.com' }));
 
 const cfg = c.resolve<Config>(TOKENS.Config);
 ```
@@ -126,19 +126,19 @@ const cfg = c.resolve<Config>(TOKENS.Config);
 ### Wiring dependencies together
 
 ```ts
-import { Container } from "plain-ioc";
+import { Container } from 'plain-ioc';
 
 const TOKENS = {
-  BaseUrl: Symbol("BaseUrl"),
+  BaseUrl: Symbol('BaseUrl')
 } as const;
 
 class ApiClient {
-  constructor(public readonly baseUrl: string) {}
+  public constructor(public readonly baseUrl: string) {}
 }
 
 const c = new Container();
 
-c.bindSingleton<string>(TOKENS.BaseUrl, () => "https://api.example.com");
+c.bindSingleton<string>(TOKENS.BaseUrl, () => 'https://api.example.com');
 c.bindSingleton(ApiClient, (c) => new ApiClient(c.resolve(TOKENS.BaseUrl)));
 
 const api = c.resolve<ApiClient>(ApiClient);
@@ -148,13 +148,13 @@ console.log(api.baseUrl);
 ### Check if a key is bound
 
 ```ts
-import { Container } from "plain-ioc";
+import { Container } from 'plain-ioc';
 
 const c = new Container();
 
-c.isBound("service"); // false
-c.bind("service", () => ({ ok: true }));
-c.isBound("service"); // true
+c.isBound('service'); // false
+c.bind('service', () => ({ ok: true }));
+c.isBound('service'); // true
 ```
 
 ### Unbind
@@ -162,14 +162,14 @@ c.isBound("service"); // true
 `unbind()` removes the factory. If the binding was a singleton, its cached instance is removed as well.
 
 ```ts
-import { Container } from "plain-ioc";
+import { Container } from 'plain-ioc';
 
 const c = new Container();
 
-c.bindSingleton("app", () => ({ name: "demo" }));
+c.bindSingleton('app', () => ({ name: 'demo' }));
 
-c.unbind("app");
-// c.resolve("app") will now throw
+c.unbind('app');
+// c.resolve('app') will now throw
 ```
 
 ---
@@ -181,7 +181,7 @@ By default, circular dependency detection is **off**.
 Enable it when creating the container:
 
 ```ts
-import { Container } from "plain-ioc";
+import { Container } from 'plain-ioc';
 
 const c = new Container({ circularDependencyDetect: true });
 ```
@@ -243,15 +243,15 @@ All library errors extend the base class `PlainIocError`:
 You can catch these specifically:
 
 ```ts
-import { Container, PlainIocFactoryNotBoundError } from "plain-ioc";
+import { Container, PlainIocFactoryNotBoundError } from 'plain-ioc';
 
 const c = new Container();
 
 try {
-  c.resolve("missing");
+  c.resolve('missing');
 } catch (e) {
   if (e instanceof PlainIocFactoryNotBoundError) {
-    console.error("Not registered");
+    console.error('Not registered');
   }
 }
 ```
