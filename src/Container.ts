@@ -52,9 +52,13 @@ export class Container {
     try {
       if (typeof key === 'function') {
         return `[${keyType}] "${key.name || '<anonymous>'}"`;
-      } else if (typeof key === 'symbol') {
+      }
+
+      if (typeof key === 'symbol') {
         return `[${keyType}] "${Symbol.prototype.toString.call(key)}"`;
-      } else if (typeof key === 'object') {
+      }
+
+      if (typeof key === 'object') {
         return `[${keyType}] "${Object.prototype.toString.call(key)}"`;
       }
 
